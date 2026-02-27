@@ -33,18 +33,33 @@ public class JobApplicationService {
 
     }
 
-    public List<JobApplication> listUserJobs(Long userId) { return repository.findByUserId(userId); }
-
-    public JobApplication updateStatus(Long jobId, ApplicationStatus status) {
-
-        JobApplication job = repository.findById(jobId).orElseThrow(() -> new RuntimeException("Job not found"));
-
-        job.setStatus(status);
-
-        return repository.save(job);
-
+    public List<JobApplication> listUserJobs(User user) {
+        return repository.findByUserId(user.getId());
     }
 
-    public void deleteJob(Long jobId) { repository.deleteById(jobId); }
+    public JobApplication updateStatus(User user, Long jobId, ApplicationStatus status) {
+
+        JobApplication job = repository.findById(jobId)
+                .orElseThrow(() -> new RuntimeException("Job not found"));
+
+        if (!job.getUser().getId().equals(user.getId())) {
+            throw new RuntimeException("You cannot update this job");
+        }
+
+        job.setStatus(status);
+        return repository.save(job);
+    }
+
+    public void deleteJob(User user, Long jobId) {
+
+        JobApplication job = repository.findById(jobId)
+                .orElseThrow(() -> new RuntimeException("Job not found"));
+
+        if (!job.getUser().getId().equals(user.getId())) {
+            throw new RuntimeException("You cannot delete this job");
+        }
+
+        repository.delete(job);
+    }
 
 }
